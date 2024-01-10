@@ -9,6 +9,7 @@ import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 import { error } from "console";
+import { register } from "./controllers/auth.js";
 
 /*CONFIGURATION*/
 const __fileName = fileURLToPath(import.meta.url);
@@ -35,9 +36,29 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-/* MONGOOSE SETUP*/
+/* ROUTES WITH FILES*/
+app.post("/auth/register", upload.single("picture"), register);
+
+/*ROUTES*/
+// app.use("/auth", authroutes)
+
+
+// Health check route
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'Active',
+        message: 'Server is healthy and running.',
+    });
+});
+
+
+
+// /* MONGOOSE SETUP*/
 const PORT = process.env.PORT || 4000;
 mongoose.connect(process.env.MONGO_URL, {
-}).then(() => {
-    app.listen(PORT, console.log(`Server Port :${PORT}`));
-}).catch((error) => console.log(`${error}, did not connect`));
+}).then(c => console.log("Database connected"))
+    .catch((error) => console.log("Database connection error: " + error))
+
+app.listen(PORT, () => {
+    console.log(`Server is working on port: ${PORT}`);
+});
