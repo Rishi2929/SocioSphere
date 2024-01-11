@@ -30,7 +30,8 @@ const store = configureStore({
     }),
 });
 
-export const server = "http://localhost:3001";
+// export const server = "http://localhost:3001";
+export const server = "https://sociosphere-yh9a.onrender.com"
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
