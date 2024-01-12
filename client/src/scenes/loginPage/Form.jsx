@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Toaster, toast } from 'react-hot-toast';
 import {
   Box,
   Button,
@@ -17,14 +18,24 @@ import Dropzone from "react-dropzone";
 import FlexBetween from "components/FlexBetween";
 import { server } from "index";
 
+
+
 const registerSchema = yup.object().shape({
-  firstName: yup.string().required("required"),
-  lastName: yup.string().required("required"),
-  email: yup.string().email("invalid email").required("required"),
-  password: yup.string().required("required"),
-  location: yup.string().required("required"),
-  occupation: yup.string().required("required"),
-  picture: yup.string().required("required"),
+  firstName: yup.string().required("First Name is required"),
+  lastName: yup.string().required("Last Name is required"),
+  email: yup.string().email("Invalid email").required("Email is required"),
+  password: yup.string().required("Password is required"),
+  location: yup.string().required("Location is required"),
+  occupation: yup.string().required("Occupation is required"),
+  picture: yup
+    .mixed()
+    .required("Picture is required")
+    .test("fileFormat", "Unsupported file format", (value) => {
+      if (value) {
+        return ["image/jpeg", "image/jpg", "image/png"].includes(value.type);
+      }
+      return true;
+    }),
 });
 
 const loginSchema = yup.object().shape({
@@ -56,48 +67,81 @@ const Form = () => {
   const isLogin = pageType === "login";
   const isRegister = pageType === "register";
 
+  const [loading, setLoading] = useState(false);
+
+
+
   const register = async (values, onSubmitProps) => {
-    // this allows us to send form info with image
-    const formData = new FormData();
-    for (let value in values) {
-      formData.append(value, values[value]);
-    }
-    formData.append("picturePath", values.picture.name);
+    console.log("first")
 
-    const savedUserResponse = await fetch(
-      // "http://localhost:3001/auth/register",
-      `${server}/auth/register`,
-      {
-        method: "POST",
-        body: formData,
+    try {
+      // this allows us to send form info with image
+      console.log("first")
+      setLoading(true);
+
+
+      const formData = new FormData();
+      for (let value in values) {
+        formData.append(value, values[value]);
       }
-    );
-    const savedUser = await savedUserResponse.json();
-    onSubmitProps.resetForm();
+      formData.append("picturePath", values.picture.name);
 
-    if (savedUser) {
-      setPageType("login");
+      const savedUserResponse = await fetch(`${server}/auth/register`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const savedUser = await savedUserResponse.json();
+      onSubmitProps.resetForm();
+
+      if (savedUser) {
+        setPageType("login");
+      }
+      toast.success("User registered successfully")
+
+    } catch (error) {
+      toast.error("Error registering user")
+    }
+    finally {
+      setLoading(false);
     }
   };
 
+
   const login = async (values, onSubmitProps) => {
-    const loggedInResponse = await fetch(`${server}/auth/login`,
-      {
+    try {
+      setLoading(true);
+      const loggedInResponse = await fetch(`${server}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-    const loggedIn = await loggedInResponse.json();
-    onSubmitProps.resetForm();
-    if (loggedIn) {
-      dispatch(
-        setLogin({
-          user: loggedIn.user,
-          token: loggedIn.token,
-        })
-      );
-      navigate("/home");
+
+      if (!loggedInResponse.ok) {
+        throw new Error("Failed to log in");
+      }
+
+      const loggedIn = await loggedInResponse.json();
+      onSubmitProps.resetForm();
+
+      if (loggedIn) {
+        dispatch(
+          setLogin({
+            user: loggedIn.user,
+            token: loggedIn.token,
+          })
+        );
+        navigate("/home");
+      }
+      toast.success("User logged in successfully")
+    } catch (error) {
+      console.error("Error logging in:", error);
+      toast.error("Invalid login credentials")
+    } finally {
+      setLoading(false);
     }
+
   };
 
   const handleFormSubmit = async (values, onSubmitProps) => {
@@ -240,6 +284,7 @@ const Form = () => {
             <Button
               fullWidth
               type="submit"
+              disabled={loading}
               sx={{
                 m: "2rem 0",
                 p: "1rem",
@@ -248,7 +293,9 @@ const Form = () => {
                 "&:hover": { color: palette.primary.main },
               }}
             >
-              {isLogin ? "LOGIN" : "REGISTER"}
+              {/* {isLogin ? "LOGIN" : "REGISTER"} */}
+              {loading ? "Loading..." : isLogin ? "LOGIN" : "REGISTER"}
+
             </Button>
             <Typography
               onClick={() => {
@@ -276,3 +323,5 @@ const Form = () => {
 };
 
 export default Form;
+
+<Toaster position="top-right" />

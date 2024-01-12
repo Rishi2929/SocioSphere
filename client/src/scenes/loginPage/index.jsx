@@ -1,9 +1,20 @@
 import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
 import Form from "./Form";
+import { Toaster, toast } from 'react-hot-toast';
+import { useEffect } from "react";
+
 
 const LoginPage = () => {
   const theme = useTheme();
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
+
+  // useEffect(() => {
+  //   // Show a loading toast when the component mounts
+  //   const loadingToast = toast.success("It might take a minute or two to start the server");
+
+  //   return () => toast.dismiss(loadingToast);
+  // }, []);
+
   return (
     <Box>
       <Box

@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import HomePage from "scenes/homePage";
 import LoginPage from "scenes/loginPage";
 import ProfilePage from "scenes/profilePage";
@@ -15,6 +16,7 @@ function App() {
 
   return (
     <div className="app">
+      <Toaster position="top-center" />
       <BrowserRouter>
         <ThemeProvider theme={theme}>
           <CssBaseline />
